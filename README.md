@@ -8,11 +8,13 @@ It can take a few days to get your account set up if you're unlucky and your acc
 strongly recommend getting an account set up now if you haven't already. Please visit https://aws.amazon.com/
 and click the 'Create Account' button at the top right.
 
-A step by step guide can be found at https://www.dropbox.com/scl/fi/nbwph7yjzvzqcai5qm1ut/Getting-Started-with-AWS-Beginner-Handbook-v3.7.pdf?rlkey=tjvloyxjecl0fjbcinrcttmhi&dl=0
-Please note that some of the UI may have changed since that document was created.
+Your can [use the CloudWolf guide to creating an AWS account](https://www.dropbox.com/scl/fi/nbwph7yjzvzqcai5qm1ut/Getting-Started-with-AWS-Beginner-Handbook-v3.7.pdf?rlkey=tjvloyxjecl0fjbcinrcttmhi&dl=0), 
+but please note that some of the UI may have changed since that document was created.
+I would also suggest create a billing alert using the process detailed in the CloudWolf document.
 
-If your AWS account is brand new please verify that you can launch an EC2 instance by following the directions
-at https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/tutorial-launch-my-first-ec2-instance.html
+If your AWS account is brand new please verify that you can launch an EC2 instance by following the 
+[launch my first EC2 instance directions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/tutorial-launch-my-first-ec2-instance.html).
+
 It can take up to 24 hours from account creation before you're able to launch an instance.
 You can terminate it once it reaches 'running' state.
 
