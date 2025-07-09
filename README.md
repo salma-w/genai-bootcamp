@@ -53,11 +53,36 @@ You can either configure IAM Identity Center or create an IAM user (see the Clou
 IAM Identity Center is overkill for the purposes of this course, so unless you already have it configured I suggest following the IAM user set up guide at https://docs.aws.amazon.com/cli/latest/userguide/cli-authentication-user.html
 Please set `us-west-2` as your default region when running `aws configure`.
 
+# Testing the environment
+
+## AWS
+
 You can test your AWS session by running
 
-```
+```bash
 aws sts get-caller-identity
 ```
 
-If this returns a JSON object with a `UserId`, an `Account` and an `Arn`, you're good to go.
+If this returns a JSON object with a `UserId`, an `Account` and an `Arn`, your AWS credentials are correctly configured.
 
+Once this is done, please
+
+## CDK
+
+```bash
+cd week5/1-hello-world
+uv run cdk bootstrap
+```
+
+This will create the base resources you need to use [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/home.html)
+
+---
+
+# Background reading
+
+All of this is optional, but will assist you in hitting the ground running.
+I've ordered by importance.
+
+1. [Strands Agents SDK](https://strandsagents.com/latest/), in particular the [Agent Loop](https://strandsagents.com/latest/user-guide/concepts/agents/agent-loop/) and the Safety & Security section.
+2. [AWS CDK Core concepts](https://docs.aws.amazon.com/cdk/v2/guide/core-concepts.html)
+3. [What is AWS Lambda?](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
