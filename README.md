@@ -67,7 +67,14 @@ aws sts get-caller-identity
 
 If this returns a JSON object with a `UserId`, an `Account` and an `Arn`, your AWS credentials are correctly configured.
 
-Once this is done, please
+### Bedrock
+
+Verify you have AWS Bedrock access by asking Claude Haiku a question:
+
+```bash
+aws bedrock-runtime converse --model-id us.anthropic.claude-3-5-haiku-20241022-v1:0 --messages '[{"role": "user", "content": [{"text": "Describe the purpose of a \"hello world\" program in one line."}]}]'
+```
+
 
 ## CDK
 
