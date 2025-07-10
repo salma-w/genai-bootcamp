@@ -57,6 +57,9 @@ Please set `us-west-2` as your default region when running `aws configure`.
 
 # Testing the environment
 
+If you're running on Windows, run these commands under WSL2.
+For Mac and Linux, use your normal terminal or install [ghostty](https://ghostty.org/) for a better experience.
+
 ## AWS
 
 You can test your AWS session by running
