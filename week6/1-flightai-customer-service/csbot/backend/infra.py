@@ -1,4 +1,4 @@
-from aws_cdk import Duration, Fn, RemovalPolicy
+from aws_cdk import Duration, Fn, RemovalPolicy, BundlingOptions, Stack
 from constructs import Construct
 import aws_cdk.aws_dynamodb as dynamodb
 import aws_cdk.aws_iam as iam
@@ -19,22 +19,39 @@ class Backend(Construct):
                                         )
         state_bucket = s3.Bucket(self, 'StateBucket')
 
-        fn = _lambda.DockerImageFunction(self, 'CSBackend',
-                                            function_name='CSBackend',
-                                            timeout=Duration.seconds(60),
-                                            architecture=_lambda.Architecture.X86_64,
-                                            code=_lambda.DockerImageCode.from_image_asset(
-                                                directory='csbot/backend/src',
-                                                file='Dockerfile'
-                                            ),
-                                            environment={
-                                                 "MODEL_ID": "us.anthropic.claude-sonnet-4-20250514-v1:0",
-                                                 "AWS_LWA_INVOKE_MODE": "response_stream",
-                                                 "STATE_BUCKET": state_bucket.bucket_name,
-                                                 "DDB_TABLE": dynamodb_table.table_name,
-                                            },
-                                            memory_size=1024,
-                                        )
+        fn = _lambda.Function(self, 'CSBackend',
+                                function_name='CSBot',
+                                timeout=Duration.seconds(60),
+                                architecture=_lambda.Architecture.X86_64,
+                                runtime=_lambda.Runtime.PYTHON_3_13,
+                                handler='run.sh',
+                                code=_lambda.Code.from_asset('csbot/backend/src',
+                                    bundling=BundlingOptions(
+                                        image=_lambda.Runtime.PYTHON_3_13.bundling_image,
+                                        command=[
+                                            'bash', '-c',
+                                            'pip install uv && uv export --frozen --no-dev --no-editable -o requirements.txt && pip install -r requirements.txt -t /asset-output && cp -r app/* /asset-output/'
+                                        ],
+                                        user='root'
+                                    )
+                                ),
+                                layers=[
+                                    _lambda.LayerVersion.from_layer_version_arn(
+                                        self,
+                                        'LambdaAdapterLayer',
+                                        f'arn:aws:lambda:{Stack.of(self).region}:753240598075:layer:LambdaAdapterLayerX86:25'
+                                    )
+                                ],
+                                environment={
+                                    "AWS_LAMBDA_EXEC_WRAPPER": "/opt/bootstrap",
+                                    "PORT": "8000",
+                                    "MODEL_ID": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+                                    "AWS_LWA_INVOKE_MODE": "response_stream",
+                                    "STATE_BUCKET": state_bucket.bucket_name,
+                                    "DDB_TABLE": dynamodb_table.table_name,
+                                },
+                                memory_size=1024,
+                            )
         _ = state_bucket.grant_read_write(fn)
         _ = dynamodb_table.grant_read_write_data(fn)
         # Add Bedrock permissions to the Lambda function
