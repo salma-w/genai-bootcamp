@@ -4,6 +4,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from strands import Agent, tool
 from strands.agent.conversation_manager import SlidingWindowConversationManager
+from strands.models import BedrockModel
 from trip import FullTrip, Trip
 from flight import Flight, PaymentStatus, TicketType
 from datetime import datetime, timedelta, timezone
@@ -18,7 +19,9 @@ import uvicorn
 
 model_id = os.environ.get("MODEL_ID", "us.anthropic.claude-3-5-haiku-20241022-v1:0")
 state_bucket = os.environ.get("STATE_BUCKET", "")
-logging.getLogger("strands").setLevel(logging.WARNING)
+guardrail_id = os.environ.get("GUARDRAIL_ID", "")
+guardrail_version = os.environ.get("GUARDRAIL_VERSION", "DRAFT")
+logging.getLogger("strands").setLevel(logging.DEBUG)
 logging.basicConfig(
     format="%(levelname)s | %(name)s | %(message)s", 
     handlers=[logging.StreamHandler()]
@@ -189,6 +192,13 @@ def create_dummy_trips(user_id: str):
 
 
 def LoadHistory(session_id: str) -> Agent:
+    logger.info(f"Loading session {session_id} using guardrail_id {guardrail_id} {guardrail_version}")
+    bedrock_model = BedrockModel(
+        model_id=model_id,
+        guardrail_id=guardrail_id,
+        guardrail_version=guardrail_version,
+        guardrail_trace="enabled",
+    )
     global current_user_id
     current_user_id = session_id
     s3_key = f"sessions/{session_id}.json"
@@ -198,7 +208,7 @@ def LoadHistory(session_id: str) -> Agent:
         state = json.loads(state_json)
         logger.info(f"Successfully loaded session {session_id} from S3")
         return Agent(
-            model=model_id,
+            model=bedrock_model,
             messages=state.get("messages"),
             system_prompt=state.get("system_prompt"),
             conversation_manager=conversation_manager,
@@ -209,7 +219,7 @@ def LoadHistory(session_id: str) -> Agent:
             logger.info(f"Session {session_id} does not exist, creating new agent")
             create_dummy_trips(session_id)
             agent = Agent(
-                model=model_id,
+                model=bedrock_model,
                 system_prompt=system_prompt,
                 conversation_manager=conversation_manager,
                 tools=[t_list_trips, t_flights_for_trip, t_refund_flight],
