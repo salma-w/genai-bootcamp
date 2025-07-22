@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 from strands import Agent
+import uuid
 
 model_id = os.environ.get("MODEL_ID", "")
 s3_client = boto3.client('s3')
@@ -19,7 +20,7 @@ def validate_bank_statement(document: bytes) -> bool:
         {
             "document": {
                 "format": "pdf",
-                "name": "check",
+                "name": f"check-{uuid.uuid4()}",
                 "source": {
                     "bytes": document,
                 },

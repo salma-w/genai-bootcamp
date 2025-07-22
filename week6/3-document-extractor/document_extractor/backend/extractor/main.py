@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 from strands import Agent
+import uuid
 
 model_id = os.environ.get("MODEL_ID", "")
 s3_client = boto3.client('s3')
@@ -28,7 +29,7 @@ def extract_bank_statement_data(document: bytes) -> dict:
         {
             "document": {
                 "format": "pdf",
-                "name": "bank_statement",
+                "name": f"bank_statement-{uuid.uuid4()}",
                 "source": {
                     "bytes": document,
                 },

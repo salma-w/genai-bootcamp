@@ -29,12 +29,13 @@ class Backend(Construct):
         validate_input_fn = Fn(self, 'ValidateInputFn',
                                code_path='document_extractor/backend/input_validator',
                                bucket=input_bucket,
+                               timeout=120,
                                )
         
         extractor_fn = Fn(self, 'ExtractorFn',
                           code_path='document_extractor/backend/extractor',
                           bucket=input_bucket,
-                          timeout=60)
+                          timeout=120)
         
         # Create output validator function stub
         output_validator_fn = Fn(self, 'OutputValidatorFn',
