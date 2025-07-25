@@ -5,7 +5,11 @@ on:
 
 jobs:
   deploy:
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/reusable-deploy-cdk.yaml
     with:
       project_directory: week5/2-weather
-      aws_role_arn: ${{ vars.AWS_ROLE_ARN }}
+    secrets:
+      aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}

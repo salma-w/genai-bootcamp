@@ -3,12 +3,12 @@ name: Reusable Deploy CDK
 on:
   workflow_call:
     inputs:
-      aws_role_arn:
-        required: true
-        type: string
       project_directory:
         required: true
         type: string
+    secrets:
+      aws_role_arn:
+        required: true
 
 jobs:
   deploy:
@@ -28,7 +28,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ inputs.aws_role_arn }}
+          role-to-assume: ${{ secrets.aws_role_arn }}
           aws-region: us-east-1
 
       - name: Install uv

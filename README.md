@@ -47,8 +47,7 @@ own fork to do so.
 
     - Navigate to your repository on GitHub.
     - Go to `Settings` > `Secrets and variables` > `Actions`.
-    - Select the `Variables` tab.
-    - Click `New repository variable`.
+    - Click `New repository secret`.
     - Name the variable `AWS_ROLE_ARN`.
     - Paste the `RoleArn` value from the previous step.
     - Click `Add variable`.
