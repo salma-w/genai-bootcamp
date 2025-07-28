@@ -1,4 +1,4 @@
-name: Deploy FlightAI Customer Service
+name: Deploy W6 - FlightAI Customer Service
 
 on:
   workflow_dispatch:

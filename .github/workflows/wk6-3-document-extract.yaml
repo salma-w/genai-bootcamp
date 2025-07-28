@@ -1,4 +1,4 @@
-name: Deploy Document Extractor
+name: Deploy W6 - Document Extractor
 
 on:
   workflow_dispatch:

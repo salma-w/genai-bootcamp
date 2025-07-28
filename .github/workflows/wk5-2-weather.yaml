@@ -1,4 +1,4 @@
-name: Deploy Weather
+name: Deploy W5 - Weather
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Deploy Hello World
+name: Deploy W5 - Hello World
 
 on:
   workflow_dispatch:

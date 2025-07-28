@@ -1,4 +1,4 @@
-name: Deploy W6 - Guardrails
+name: Deploy W7 - S3 Vectors
 
 on:
   workflow_dispatch:
@@ -10,6 +10,6 @@ jobs:
       contents: read
     uses: ./.github/workflows/reusable-deploy-cdk.yaml
     with:
-      project_directory: week6/2-guardrails
+      project_directory: week7/1-s3-vectors
     secrets:
       aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
