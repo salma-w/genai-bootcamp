@@ -45,4 +45,4 @@ jobs:
       - name: Deploy CDK
         run: |
           cd ${{ inputs.project_directory }}
-          uv run cdk deploy
+          uv run cdk deploy --all --require-approval=never
