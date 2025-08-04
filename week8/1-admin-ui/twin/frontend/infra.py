@@ -24,8 +24,12 @@ class Frontend(Construct):
         super().__init__(scope, id, **kwargs)
 
         frontend_bucket = s3.Bucket(self, 'FrontendBucket')
+        admin_frontend_bucket = s3.Bucket(self, 'AdminFrontendBucket')
 
         s3_origin = origins.S3BucketOrigin.with_origin_access_control(frontend_bucket,
+                                                                       origin_access_levels=[cloudfront.AccessLevel.READ, cloudfront.AccessLevel.LIST],
+                                                                      )
+        admin_s3_origin = origins.S3BucketOrigin.with_origin_access_control(admin_frontend_bucket,
                                                                        origin_access_levels=[cloudfront.AccessLevel.READ, cloudfront.AccessLevel.LIST],
                                                                       )
         origin_request_policy = cloudfront.OriginRequestPolicy(self, "OriginRequestPolicy",
@@ -79,6 +83,14 @@ function handler(event) {
                                                                 )]
                                                             ),
                                                             additional_behaviors={
+                                                                '/admin/*': cloudfront.BehaviorOptions(
+                                                                    origin=admin_s3_origin,
+                                                                    viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                                                                    function_associations=[cloudfront.FunctionAssociation(
+                                                                        function=rewrite_function,
+                                                                        event_type=cloudfront.FunctionEventType.VIEWER_REQUEST
+                                                                    )]
+                                                                ),
                                                                 '/api/*': cloudfront.BehaviorOptions(
                                                                     origin=backend_origin,
                                                                     viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -114,7 +126,7 @@ function handler(event) {
                                           ],
                                           working_directory="/asset-input",
                                       ))],
-                                      destination_bucket=frontend_bucket,
+                                      destination_bucket=admin_frontend_bucket,
                                       destination_key_prefix='admin/',
                                       distribution=distribution,
                                       distribution_paths=['/admin/*'],
@@ -134,7 +146,7 @@ function handler(event) {
                                           '_app/env.js',
                                           env_js_content
                                       )],
-                                      destination_bucket=frontend_bucket,
+                                      destination_bucket=admin_frontend_bucket,
                                       destination_key_prefix='admin',
                                       distribution=distribution,
                                       distribution_paths=['/admin/_app/env.js'],
