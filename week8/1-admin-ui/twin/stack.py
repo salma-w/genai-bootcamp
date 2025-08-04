@@ -3,6 +3,7 @@ from aws_cdk.aws_s3 import Bucket
 from twin.backend.infra import Backend
 from twin.frontend.infra import Frontend
 from twin.admin.infra import Admin
+from twin.rum.infra import Rum
 
 class Twin(cdk.Stack):
     def __init__(self, scope: cdk.App, id: str,
@@ -33,6 +34,10 @@ class Twin(cdk.Stack):
                             custom_certificate_arn=custom_certificate_arn,
                             custom_domain_name=custom_domain_name,
                            )
+
+        _ = Rum(self, 'Rum',
+                  domain_name=custom_domain_name or frontend.domain_name,
+                 )
 
         _ = cdk.CfnOutput(
             self, 
