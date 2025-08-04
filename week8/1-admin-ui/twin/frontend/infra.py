@@ -137,7 +137,8 @@ function handler(event) {
                                       destination_bucket=frontend_bucket,
                                       destination_key_prefix='admin',
                                       distribution=distribution,
-                                      distribution_paths=['/admin/_app/env.js']
+                                      distribution_paths=['/admin/_app/env.js'],
+                                      content_type='application/javascript'
                                       )
 
         
