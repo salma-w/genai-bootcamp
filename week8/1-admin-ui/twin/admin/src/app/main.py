@@ -33,7 +33,7 @@ async def root():
     return {"message": "OK"}
 
 
-@app.get("/admin/api/questions", response_model=list[Question])
+@app.get("/adminapi/questions", response_model=list[Question])
 async def list_questions(
     unansweredOnly: bool = False,
     current_user: dict = Depends(get_current_user)
@@ -54,7 +54,7 @@ async def list_questions(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An internal error occurred while listing questions.")
 
 
-@app.post("/admin/api/questions", response_model=Question, status_code=status.HTTP_201_CREATED)
+@app.post("/adminapi/questions", response_model=Question, status_code=status.HTTP_201_CREATED)
 async def add_question(
     add_request: AddQuestionRequest,
     current_user: dict = Depends(get_current_user)
@@ -73,7 +73,7 @@ async def add_question(
     )
 
 
-@app.post("/admin/api/questions/{question_id}/answer", response_model=Question)
+@app.post("/adminapi/questions/{question_id}/answer", response_model=Question)
 async def answer_question(
     question_id: str,
     answer_request: AnswerRequest,
@@ -93,7 +93,7 @@ async def answer_question(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.delete("/admin/api/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/adminapi/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_question(
     question_id: str,
     current_user: dict = Depends(get_current_user)
@@ -109,7 +109,7 @@ async def delete_question(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.post("/admin/api/questions/{question_id}/update", response_model=Question)
+@app.post("/adminapi/questions/{question_id}/update", response_model=Question)
 async def update_question(
     question_id: str,
     update_request: UpdateQuestionRequest,
@@ -143,7 +143,7 @@ async def update_question(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An internal error occurred while updating the question.")
 
 
-@app.post("/admin/api/sync", response_model=SyncResponse, status_code=status.HTTP_202_ACCEPTED)
+@app.post("/adminapi/sync", response_model=SyncResponse, status_code=status.HTTP_202_ACCEPTED)
 async def sync_knowledge_base(current_user: dict = Depends(get_current_user)):
     """
     Triggers a sync of the questions to the knowledge base.

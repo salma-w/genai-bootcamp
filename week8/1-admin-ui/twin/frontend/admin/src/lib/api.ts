@@ -20,7 +20,7 @@ async function getHeaders() {
 
 export async function listQuestions(unansweredOnly = false): Promise<Question[]> {
 	const headers = await getHeaders();
-	let url = '/admin/api/questions';
+	let url = '/adminapi/questions';
 	if (unansweredOnly) {
 		url += '?unansweredOnly=true';
 	}
@@ -41,7 +41,7 @@ export async function listQuestions(unansweredOnly = false): Promise<Question[]>
 
 export async function syncToKnowledgeBase(): Promise<SyncResponse> {
 	const headers = await getHeaders();
-	const url = '/admin/api/sync';
+	const url = '/adminapi/sync';
 
 	const response = await fetch(url, {
 		method: 'POST',
@@ -59,7 +59,7 @@ export async function syncToKnowledgeBase(): Promise<SyncResponse> {
 
 export async function deleteQuestion(question_id: string): Promise<void> {
 	const headers = await getHeaders();
-	const url = `/admin/api/questions/${question_id}`;
+	const url = `/adminapi/questions/${question_id}`;
 
 	const response = await fetch(url, {
 		method: 'DELETE',
@@ -78,7 +78,7 @@ export async function updateQuestion(
 	updates: UpdateQuestionPayload
 ): Promise<Question> {
 	const headers = await getHeaders();
-	const url = `/admin/api/questions/${question_id}/update`;
+	const url = `/adminapi/questions/${question_id}/update`;
 
 	const response = await fetch(url, {
 		method: 'POST',
@@ -100,7 +100,7 @@ export async function answerQuestion(
 	answer: string
 ): Promise<Question> {
 	const headers = await getHeaders();
-	const url = `/admin/api/questions/${question_id}/answer`;
+	const url = `/adminapi/questions/${question_id}/answer`;
 
 	const response = await fetch(url, {
 		method: 'POST',
@@ -122,7 +122,7 @@ export async function addQuestion(
 	answer?: string | null
 ): Promise<Question> {
 	const headers = await getHeaders();
-	const url = '/admin/api/questions';
+	const url = '/adminapi/questions';
 
 	const response = await fetch(url, {
 		method: 'POST',
