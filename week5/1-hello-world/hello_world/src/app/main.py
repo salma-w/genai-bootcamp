@@ -5,7 +5,7 @@ import uvicorn
 from strands import Agent
 from pydantic import BaseModel
 
-model_id = os.environ.get("MODEL_ID", "us.anthropic.claude-3-5-haiku-20241022-v1:0")
+model_id = os.environ.get("MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
 
 class ChatRequest(BaseModel):
     prompt: str = "How can I use curl to POST a JSON object with a key `prompt`?"

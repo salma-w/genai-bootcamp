@@ -24,7 +24,7 @@ class Backend(Construct):
                                                 file='Dockerfile'
                                             ),
                                             environment={
-                                                 "MODEL_ID": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+                                                 "MODEL_ID": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
                                                  "AWS_LWA_INVOKE_MODE": "response_stream",
                                                  "STATE_BUCKET": state_bucket.bucket_name,
                                             },

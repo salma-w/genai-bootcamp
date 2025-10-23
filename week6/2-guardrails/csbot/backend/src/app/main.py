@@ -17,7 +17,7 @@ import requests
 import uuid
 import uvicorn
 
-model_id = os.environ.get("MODEL_ID", "us.anthropic.claude-3-5-haiku-20241022-v1:0")
+model_id = os.environ.get("MODEL_ID", "")
 state_bucket = os.environ.get("STATE_BUCKET", "")
 guardrail_id = os.environ.get("GUARDRAIL_ID", "")
 guardrail_version = os.environ.get("GUARDRAIL_VERSION", "DRAFT")

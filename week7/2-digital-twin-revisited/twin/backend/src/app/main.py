@@ -25,7 +25,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-model_id = os.environ.get("MODEL_ID", "us.anthropic.claude-3-5-haiku-20241022-v1:0")
+model_id = os.environ.get("MODEL_ID", "")
 bedrock_model = BedrockModel(
     model_id=model_id,
     # Add Guardrails here

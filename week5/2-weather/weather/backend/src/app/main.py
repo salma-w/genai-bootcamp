@@ -1,18 +1,18 @@
-from botocore.exceptions import ClientError
-from fastapi import Cookie, FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from strands import Agent, tool
+from strands import Agent
+from strands.session.s3_session_manager import S3SessionManager
 import boto3
 import json
 import logging
 import os
-import requests
 import uuid
 import uvicorn
 
-model_id = os.environ.get("MODEL_ID", "us.anthropic.claude-3-5-haiku-20241022-v1:0")
+model_id = os.environ.get("MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
 state_bucket = os.environ.get("STATE_BUCKET", "")
+state_prefix = os.environ.get("STATE_PREFIX", "sessions/")
 logging.getLogger("strands").setLevel(logging.WARNING)
 logging.basicConfig(
     format="%(levelname)s | %(name)s | %(message)s", 
@@ -21,56 +21,33 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.info("Logger initialized")
-s3_client = boto3.client("s3")
+
+if not state_bucket:
+    raise RuntimeError("STATE_BUCKET environment variable must be set")
+
+if state_prefix and not state_prefix.endswith("/"):
+    state_prefix = f"{state_prefix}/"
+
+boto_session = boto3.Session()
 
 
 class ChatRequest(BaseModel):
     prompt: str
 
 
-def SaveHistory(agent: Agent, session_id: str):
-    state = {
-        "messages": agent.messages,
-        "system_prompt": agent.system_prompt,
+def create_agent(session_id: str) -> Agent:
+    session_manager_kwargs = {
+        "session_id": session_id,
+        "bucket": state_bucket,
+        "boto_session": boto_session,
     }
-    # Serialize the state to JSON
-    state_json = json.dumps(state, indent=2)
-    s3_key = f"sessions/{session_id}.json"
-    try:
-        # Upload to S3
-        s3_client.put_object(
-            Bucket=state_bucket,
-            Key=s3_key,
-            Body=state_json,
-            ContentType="application/json"
-        )
-        logger.info(f"Successfully saved session {session_id} to S3")
-    except Exception as e:
-        logger.error(f"Failed to save session {session_id} to S3: {str(e)}")
-        raise
+    if state_prefix:
+        session_manager_kwargs["prefix"] = state_prefix
 
-def LoadHistory(session_id: str) -> Agent:
-    s3_key = f"sessions/{session_id}.json"
-    tools = []
-    try:
-        response = s3_client.get_object(Bucket=state_bucket, Key=s3_key)
-        state_json = response['Body'].read().decode('utf-8')
-        state = json.loads(state_json)
-        logger.info(f"Successfully loaded session {session_id} from S3")
-        return Agent(model=model_id,
-                     tools=tools,
-                     messages=state.get("messages"),
-                     system_prompt=state.get("system_prompt"))
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchKey':
-            logger.info(f"Session {session_id} does not exist, creating new agent")
-            return Agent(model=model_id, tools=tools)
-        else:
-            logger.error(f"Error loading session {session_id}: {e}")
-            raise
-    except Exception as e:
-        logger.error(f"Unexpected error loading session {session_id}: {e}")
-        raise
+    session_manager = S3SessionManager(**session_manager_kwargs)
+    agent = Agent(model=model_id, session_manager=session_manager)
+    logger.info("Agent initialized for session %s", session_id)
+    return agent
 
 app = FastAPI()
 
@@ -82,7 +59,7 @@ async def root():
 @app.get('/chat')
 def chat_history(request: Request):
     session_id = request.cookies.get("session_id", str(uuid.uuid4()))
-    agent = LoadHistory(session_id)
+    agent = create_agent(session_id)
 
     # Filter messages to only include first text content
     filtered_messages = []
@@ -109,7 +86,7 @@ def chat_history(request: Request):
 @app.post('/chat')
 async def chat(chat_request: ChatRequest, request: Request):
     session_id = request.cookies.get("session_id", str(uuid.uuid4()))
-    agent = LoadHistory(session_id)
+    agent = create_agent(session_id)
     response = StreamingResponse(
         generate(agent, session_id, chat_request.prompt, request),
         media_type="text/event-stream"
@@ -118,23 +95,15 @@ async def chat(chat_request: ChatRequest, request: Request):
     return response
 
 async def generate(agent: Agent, session_id: str, prompt: str, request: Request):
-    generation_cancelled = False
     try:
         async for event in agent.stream_async(prompt):
             if await request.is_disconnected():
-                generation_cancelled = True
+                logger.info("Client disconnected before completion for session %s", session_id)
                 break
             if "complete" in event:
                 logger.info("Response generation complete")
             if "data" in event:
                 yield f"data: {json.dumps(event['data'])}\n\n"
-        # Save history after streaming is complete
-        if not generation_cancelled: # Don't save if the client disconnected before completion
-            try:
-                SaveHistory(agent, session_id)
-            except Exception as e:
-                logger.error(f"Failed to save history for session {session_id}: {str(e)}")
-                # Don't re-raise to avoid breaking the response
  
     except Exception as e:
         error_message = json.dumps({"error": str(e)})

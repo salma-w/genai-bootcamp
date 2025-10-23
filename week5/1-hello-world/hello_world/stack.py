@@ -15,7 +15,7 @@ class HelloWorld(cdk.Stack):
                                             ),
                                             architecture=_lambda.Architecture.X86_64,
                                             environment={
-                                                 "MODEL_ID": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+                                                 "MODEL_ID": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
                                                  "AWS_LWA_INVOKE_MODE": "response_stream",
                                             },
                                         )
