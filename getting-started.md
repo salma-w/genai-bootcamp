@@ -26,21 +26,11 @@ To do this:
 - Open the Bedrock console: https://console.aws.amazon.com/bedrock/
 - Ensure that you are in the `us-west-2` region. Because not all features are in all regions, we will be using
   `us-west-2` for all examples
-- Select Model access at the bottom of the left navigation pane.
-- On the Model access page, you can review the End User License Agreement (EULA) for models in the EULA column in the Base models table.
-- Choose Modify model access.
-- Choose *Enable specific models*, and select the following models to be enabled:
-  - Titan Text Embeddings V2 
-  - Nova Micro
-  - Nova Premier
-  - Claude 3.5 Haiku 
-  - Claude Sonnet 4
-- Complete the 'use case details' questionnaire. Provide the minimum information possible - if it is judged that any of your responses contain PII it will get flagged for manual review
-  *Do not enter your name under Company Name* - feel free to write 'Super Data Science' and add the website https://www.superdatascience.com/
-  I suggest 'Internal training' under the use case description. 
-- Check the mode state has been updated to 'Access granted'. This may be almost instant, or could take a day or more if you got flagged for manual review.
+- Select **Chat / Text playground** (under Test) from the sidebar
+- Click **Select Model** and then *Anthropic* and then **Claude Haiku 4.5  v1**
+- If you haven't used an Anthropic model before, you'll be asked to answer some questions on your 'use case'. Keep it brief, and just put your use case as 'Learning'.
 
-There are also some pre-requisites you'll need on your machines.
+There are also some pre-requisites you'll want on your machines. Note that we'll be setting everything up so you can deploy from Github
 
 - Python + uv (I assume everyone has this already)
 - Node - https://nodejs.org/ and copy and paste the instructions at the terminal (don't use pkg installer on macos)
@@ -75,7 +65,7 @@ If this returns a JSON object with a `UserId`, an `Account` and an `Arn`, your A
 Verify you have AWS Bedrock access by asking Claude Haiku a question:
 
 ```bash
-aws bedrock-runtime converse --model-id us.anthropic.claude-3-5-haiku-20241022-v1:0 --messages '[{"role": "user", "content": [{"text": "Describe the purpose of a \"hello world\" program in one line."}]}]'
+aws bedrock-runtime converse --model-id global.anthropic.claude-haiku-4-5-20251001-v1:0 --messages '[{"role": "user", "content": [{"text": "Describe the purpose of a \"hello world\" program in one line."}]}]'
 ```
 
 
@@ -95,6 +85,7 @@ This will create the base resources you need to use [AWS CDK](https://docs.aws.a
 All of this is optional, but will assist you in hitting the ground running.
 I've ordered by importance.
 
-1. [Strands Agents SDK](https://strandsagents.com/latest/), in particular the [Agent Loop](https://strandsagents.com/latest/user-guide/concepts/agents/agent-loop/) and the Safety & Security section.
-2. [AWS CDK Core concepts](https://docs.aws.amazon.com/cdk/v2/guide/core-concepts.html)
-3. [What is AWS Lambda?](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
+1. [Getting started building your first serverless web application](https://www.youtube.com/watch?v=-WYBOuP1Y6E)
+2. [Strands Agents SDK](https://strandsagents.com/latest/), in particular the [Agent Loop](https://strandsagents.com/latest/user-guide/concepts/agents/agent-loop/) and the Safety & Security section.
+3. [AWS CDK Core concepts](https://docs.aws.amazon.com/cdk/v2/guide/core-concepts.html)
+4. [What is AWS Lambda?](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
