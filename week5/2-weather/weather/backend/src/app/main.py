@@ -40,7 +40,6 @@ def weather_per_city(city: str) -> str:
     try:
         url = f"https://wttr.in/{city}?format=j1"
         response = requests.get(url=url)
-        response.raise_for_status()
         weather_data = response.json()
         current_condition = weather_data['current_condition'][0]
         # Build a readable forecast string
