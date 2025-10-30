@@ -30,7 +30,7 @@ if state_prefix and not state_prefix.endswith("/"):
 
 boto_session = boto3.Session()
 
-
+ 
 @tool
 def weather_per_city(city: str) -> str:
     """Get weather forecast for a city.
