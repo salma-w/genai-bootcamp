@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware  # ADD THIS
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from strands import Agent, tool
@@ -10,9 +11,11 @@ import os
 import uuid
 import uvicorn
 import requests
+
 model_id = os.environ.get("MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
-state_bucket = os.environ.get("STATE_BUCKET", "")
+state_bucket = os.environ.get("STATE_BUCKET", "my-default-bucket")  # CHANGED: Provide default for local testing
 state_prefix = os.environ.get("STATE_PREFIX", "sessions/")
+
 logging.getLogger("strands").setLevel(logging.WARNING)
 logging.basicConfig(
     format="%(levelname)s | %(name)s | %(message)s", 
@@ -21,9 +24,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.info("Logger initialized")
-
-if not state_bucket:
-    raise RuntimeError("STATE_BUCKET environment variable must be set")
 
 if state_prefix and not state_prefix.endswith("/"):
     state_prefix = f"{state_prefix}/"
@@ -38,22 +38,19 @@ def weather_per_city(city: str) -> str:
         city: The name of the city
     """
     try:
-        url=f"https://wttr.in/{city}?format=j1"
-        response=requests.api.get(url=url)
+        url = f"https://wttr.in/{city}?format=j1"
+        response = requests.get(url=url)
         response.raise_for_status()
-        weather_data=response.json()
-        current_condition=weather_data['current_condition'][0]
+        weather_data = response.json()
+        current_condition = weather_data['current_condition'][0]
         # Build a readable forecast string
         result = f"Weather in {city}:\n"
         result += f"Current: {current_condition['temp_C']}°C, {current_condition['weatherDesc'][0]['value']}\n"
         result += f"Humidity: {current_condition['humidity']}%\n\n"
-            
-             
         return result
     except Exception as e:
         return f"Error getting weather for {city}: {str(e)}"
 
-    return f"Weather forecast for {city}"
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -73,12 +70,23 @@ def create_agent(session_id: str) -> Agent:
     logger.info("Agent initialized for session %s", session_id)
     return agent
 
+
 app = FastAPI()
+
+# ADD CORS MIDDLEWARE - THIS IS CRITICAL
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Called by the Lambda Adapter to check liveness
 @app.get("/")
 async def root():
     return {"message": "OK"}
+
 
 @app.get('/chat')
 def chat_history(request: Request):
@@ -99,13 +107,14 @@ def chat_history(request: Request):
             })
  
     response = Response(
-        content = json.dumps({
+        content=json.dumps({
             "messages": filtered_messages,
         }),
         media_type="application/json",
     )
     response.set_cookie(key="session_id", value=session_id)
     return response
+
 
 @app.post('/chat')
 async def chat(chat_request: ChatRequest, request: Request):
@@ -117,6 +126,7 @@ async def chat(chat_request: ChatRequest, request: Request):
     )
     response.set_cookie(key="session_id", value=session_id)
     return response
+
 
 async def generate(agent: Agent, session_id: str, prompt: str, request: Request):
     try:
@@ -132,6 +142,7 @@ async def generate(agent: Agent, session_id: str, prompt: str, request: Request)
     except Exception as e:
         error_message = json.dumps({"error": str(e)})
         yield f"event: error\ndata: {error_message}\n\n"
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", "8080")))
