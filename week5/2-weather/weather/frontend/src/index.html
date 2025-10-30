@@ -3,759 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>France Weather TV Report Generator</title>
+    <title>Backend Test - Weather API</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: monospace;
+            max-width: 800px;
+            margin: 50px auto;
             padding: 20px;
-            position: relative;
-            overflow-x: hidden;
+            background: #1e1e1e;
+            color: #00ff00;
         }
         
-        /* Animated background particles */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
+        h1 {
+            color: #00ff00;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        
+        .test-section {
+            background: #2d2d2d;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+        }
+        
+        input[type="text"] {
             width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-        
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            animation: float 15s infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) translateX(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) translateX(100px);
-                opacity: 0;
-            }
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            animation: fadeInDown 0.8s ease-out;
-        }
-        
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .header h1 {
-            color: white;
-            font-size: 3em;
-            font-weight: 700;
-            text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.3);
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-        
-        .header .subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.2em;
-            font-weight: 300;
-        }
-        
-        .header .france-flag {
-            font-size: 3em;
-            margin-bottom: 10px;
-            display: inline-block;
-            animation: wave 2s infinite;
-        }
-        
-        @keyframes wave {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
-        }
-        
-
-        /* Main content grid */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-            animation: fadeInUp 0.8s ease-out 0.2s both;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Chat section */
-        .chat-section {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            min-height: 600px;
-        }
-        
-        .chat-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .chat-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-        
-        .chat-header h2 {
-            color: #333;
-            font-size: 1.8em;
-        }
-        
-        /* Messages container */
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 20px;
             padding: 10px;
-            max-height: 400px;
+            background: #1e1e1e;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            font-family: monospace;
+            margin: 10px 0;
         }
         
-        .message {
-            margin-bottom: 15px;
-            animation: messageSlide 0.3s ease-out;
-        }
-        
-        @keyframes messageSlide {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .message.user {
-            text-align: right;
-        }
-        
-        .message-bubble {
-            display: inline-block;
-            max-width: 80%;
-            padding: 15px 20px;
-            border-radius: 20px;
-            word-wrap: break-word;
-        } 
-        
-        .message.assistant .message-bubble {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-bottom-left-radius: 5px;
-        }
-        
-        .message.user .message-bubble {
-            background: #f0f0f0;
-            color: #333;
-            border-bottom-right-radius: 5px;
-        }
-        
-        .message-time {
-            font-size: 0.75em;
-            opacity: 0.6;
-            margin-top: 5px;
-        }
-        
-        /* Input section */
-        .input-section {
-            display: flex;
-            gap: 10px;
-            padding-top: 20px;
-            border-top: 2px solid #f0f0f0;
-        }
-        
-        .input-section textarea {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            font-size: 1em;
-            font-family: inherit;
-            resize: none;
-            transition: all 0.3s ease;
-            min-height: 60px;
-        }
-        
-        .input-section textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .send-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        button {
+            background: #00ff00;
+            color: #1e1e1e;
             border: none;
-            padding: 15px 30px;
-            border-radius: 15px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-        
-        .send-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        .send-button:active {
-            transform: translateY(0);
-        }
-        
-        .send-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        /* Quick actions */
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        
-        .quick-action-btn {
             padding: 10px 20px;
-            background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
-            border-radius: 20px;
             cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
+            font-family: monospace;
+            font-weight: bold;
+            margin: 5px;
         }
         
-        .quick-action-btn:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-2px);
+        button:hover {
+            background: #00cc00;
         }
         
-        /* Weather preview section */
-        .weather-preview {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        
-        .preview-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .preview-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-        
-        .preview-header h2 {
-            color: #333;
-            font-size: 1.8em;
-        }
-        
-        .weather-cards {
-            display: grid;
-            gap: 15px;
-        }
-        
-        .weather-card {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 20px;
-            border-radius: 15px;
-            color: white;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .weather-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(245, 87, 108, 0.4);
-        }
-        
-        .weather-card h3 {
-            font-size: 1.4em;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .weather-card .city-icon {
-            font-size: 1.5em;
-        }
-        
-        .weather-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-        }
-        
-        .temp {
-            font-size: 2.5em;
-            font-weight: 700;
-        }
-        
-        .condition {
-            text-align: right;
-            opacity: 0.9;
-        }
-        
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-            margin-left: 10px;
-        }
-        
-        .loading-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: white;
-            margin: 0 2px;
-            animation: loadingDots 1.4s infinite both;
-        }
-        
-        .loading-dot:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-        
-        .loading-dot:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-        
-        @keyframes loadingDots {
-            0%, 80%, 100% {
-                opacity: 0.3;
-                transform: scale(0.8);
-            }
-            40% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        /* Status indicator */
-        .status-indicator {
+        .output {
+            background: #1e1e1e;
             padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: fadeIn 0.5s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .status-indicator.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status-indicator.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status-indicator.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        /* Responsive design */
-        @media (max-width: 1024px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2.5em;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .chat-section,
-            .weather-preview {
-                padding: 20px;
-            }
-            
-            .input-section {
-                flex-direction: column;
-            }
-            
-            .send-button {
-                width: 100%;
-            }
-        }
-        
-        /* Scrollbar styling */
-        .messages-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .messages-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .messages-container::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
-        }
-        
-        .messages-container::-webkit-scrollbar-thumb:hover {
-            background: #764ba2;
-        }
-        
-        /* Report display */
-        .report-display {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-top: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            white-space: pre-wrap;
-            font-family: 'Georgia', serif;
-            line-height: 1.8;
-            color: #333;
-        }
-        
-        .download-button {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
             margin-top: 15px;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            border: 1px solid #00ff00;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
         }
         
-        .download-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
-        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .info { color: #00ffff; }
     </style>
 </head>
 <body>
-    <!-- Animated particles background -->
-    <div class="particles" id="particles"></div>
+    <h1>🧪 Backend API Test Suite</h1>
     
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="france-flag">🇫🇷</div>
-            <h1>France Weather TV Report</h1>
-            <p class="subtitle">AI-Powered Weather Script Generator</p>
-        </div>
-        
-        <!-- Status indicator -->
-        <div id="statusIndicator" style="display: none;"></div>
-        
-        <!-- Main content -->
-        <div class="content-grid">
-            <!-- Chat section -->
-            <div class="chat-section">
-                <div class="chat-header">
-                    <div class="chat-icon">💬</div>
-                    <h2>Chat with AI</h2>
-                </div>
-                
-                <!-- Quick actions -->
-                <div class="quick-actions">
-                    <button class="quick-action-btn" onclick="sendQuickMessage('Write a TV weather report for major French cities')">
-                        📺 Generate Report
-                    </button>
-                    <button class="quick-action-btn" onclick="sendQuickMessage('What is the weather in Paris today?')">
-                        🗼 Paris Weather
-                    </button>
-                    <button class="quick-action-btn" onclick="sendQuickMessage('Compare weather in Lyon and Marseille')">
-                        ⚖️ Compare Cities
-                    </button>
-                </div>
-                
-                <!-- Messages -->
-                <div class="messages-container" id="messagesContainer">
-                    <div class="message assistant">
-                        <div class="message-bubble">
-                            👋 Hello! I'm your AI weather assistant. Ask me to generate a TV weather report for France, or inquire about specific cities!
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Input section -->
-                <div class="input-section">
-                    <textarea 
-                        id="messageInput" 
-                        placeholder="Type your message here... (e.g., 'Write a weather report for France')"
-                        onkeypress="handleKeyPress(event)"
-                    ></textarea>
-                    <button class="send-button" onclick="sendMessage()" id="sendButton">
-                        Send 📤
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Weather preview section -->
-            <div class="weather-preview">
-                <div class="preview-header">
-                    <div class="preview-icon">🌤️</div>
-                    <h2>Live Weather</h2>
-                </div>
-                
-                <div class="weather-cards" id="weatherCards">
-                    <div class="weather-card" onclick="sendQuickMessage('Tell me about the weather in Paris')">
-                        <h3><span class="city-icon">🗼</span> Paris</h3>
-                        <div class="weather-info">
-                            <div class="temp">--°</div>
-                            <div class="condition">
-                                <div>Click to check</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="weather-card" onclick="sendQuickMessage('Tell me about the weather in Lyon')">
-                        <h3><span class="city-icon">🏛️</span> Lyon</h3>
-                        <div class="weather-info">
-                            <div class="temp">--°</div>
-                            <div class="condition">
-                                <div>Click to check</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="weather-card" onclick="sendQuickMessage('Tell me about the weather in Marseille')">
-                        <h3><span class="city-icon">⛵</span> Marseille</h3>
-                        <div class="weather-info">
-                            <div class="temp">--°</div>
-                            <div class="condition">
-                                <div>Click to check</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="weather-card" onclick="sendQuickMessage('Tell me about the weather in Nice')">
-                        <h3><span class="city-icon">🏖️</span> Nice</h3>
-                        <div class="weather-info">
-                            <div class="temp">--°</div>
-                            <div class="condition">
-                                <div>Click to check</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="reportContainer"></div>
-            </div>
-        </div>
+    <div class="test-section">
+        <h2>⚙️ Configuration</h2>
+        <label>API Base URL:</label>
+        <input type="text" id="apiUrl" placeholder="https://your-api-url.amazonaws.com/prod" value="REPLACE_WITH_YOUR_API_URL">
+        <button onclick="saveUrl()">💾 Save URL</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 1: Health Check</h2>
+        <button onclick="testHealthCheck()">▶️ Run Test</button>
+        <div id="test1Output" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Chat History</h2>
+        <button onclick="testChatHistory()">▶️ Run Test</button>
+        <div id="test2Output" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Send Message (Weather Query)</h2>
+        <input type="text" id="testMessage" placeholder="What is the weather in Paris?" value="What is the weather in Paris?">
+        <button onclick="testSendMessage()">▶️ Run Test</button>
+        <div id="test3Output" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Tool Call Test</h2>
+        <button onclick="testToolCall()">▶️ Run Test</button>
+        <div id="test4Output" class="output"></div>
     </div>
     
     <script>
-        // ============================================
-        // CONFIGURATION - CHANGE THIS TO YOUR API URL
-        // ============================================
-        const API_BASE_URL = 'REPLACE_WITH_YOUR_API_URL';
-        // Example: 'https://abc123.execute-api.us-east-1.amazonaws.com/prod'
-        // No trailing slash!
-        // ============================================
+        let API_BASE_URL = localStorage.getItem('test_api_url') || 'REPLACE_WITH_YOUR_API_URL';
         
-        let conversationHistory = [];
+        // Load saved URL
+        document.getElementById('apiUrl').value = API_BASE_URL;
         
-        // Initialize particles
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 50;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                particlesContainer.appendChild(particle);
+        function saveUrl() {
+            API_BASE_URL = document.getElementById('apiUrl').value.trim();
+            // Remove trailing slash
+            if (API_BASE_URL.endsWith('/')) {
+                API_BASE_URL = API_BASE_URL.slice(0, -1);
             }
+            localStorage.setItem('test_api_url', API_BASE_URL);
+            alert('URL saved: ' + API_BASE_URL);
         }
         
-        // Initialize on load
-        window.onload = function() {
-            createParticles();
+        function log(element, message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const output = document.getElementById(element);
+            const colorClass = type;
+            output.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearLog(element) {
+            document.getElementById(element).innerHTML = '';
+        }
+        
+        async function testHealthCheck() {
+            clearLog('test1Output');
+            log('test1Output', '🔍 Testing health check endpoint...', 'info');
             
-            // Check if API URL is configured
             if (API_BASE_URL === 'REPLACE_WITH_YOUR_API_URL') {
-                showStatus('⚠️ Please update the API_BASE_URL in the HTML file', 'error');
-                addMessageToUI('assistant', '⚠️ Configuration needed: Please update the API_BASE_URL constant in the HTML file with your actual API endpoint.');
-            } else {
-                loadChatHistory();
-            }
-        };
-        
-        // Load chat history
-        async function loadChatHistory() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/chat`, {
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.messages && data.messages.length > 0) {
-                        conversationHistory = data.messages;
-                        displayHistory();
-                    }
-                }
-            } catch (error) {
-                console.log('No previous history or error loading:', error);
-            }
-        }
-        
-        // Display conversation history
-        function displayHistory() {
-            const container = document.getElementById('messagesContainer');
-            container.innerHTML = '';
-            
-            conversationHistory.forEach(msg => {
-                if (msg.content && msg.content[0] && msg.content[0].text) {
-                    addMessageToUI(msg.role, msg.content[0].text, false);
-                }
-            });
-            
-            scrollToBottom();
-        }
-        
-        // Handle Enter key
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-        
-        // Send quick message
-        function sendQuickMessage(message) {
-            document.getElementById('messageInput').value = message;
-            sendMessage();
-        }
-        
-        // Send message
-        async function sendMessage() {
-            if (API_BASE_URL === 'REPLACE_WITH_YOUR_API_URL') {
-                showStatus('❌ Please configure your API URL in the HTML file first', 'error');
+                log('test1Output', '❌ Please enter your API URL first!', 'error');
                 return;
             }
             
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
+            try {
+                log('test1Output', `📡 Connecting to: ${API_BASE_URL}/`, 'info');
+                const response = await fetch(`${API_BASE_URL}/`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                log('test1Output', `📊 Status: ${response.status} ${response.statusText}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('test1Output', `📦 Response: ${JSON.stringify(data, null, 2)}`, 'success');
+                    
+                    if (data.message === 'OK') {
+                        log('test1Output', '✅ SUCCESS! Backend is responding!', 'success');
+                    } else {
+                        log('test1Output', '⚠️ Backend responded but with unexpected data', 'error');
+                    }
+                } else {
+                    const text = await response.text();
+                    log('test1Output', `❌ Error: ${text}`, 'error');
+                }
+            } catch (error) {
+                log('test1Output', `❌ Connection failed: ${error.message}`, 'error');
+                log('test1Output', '\nPossible causes:', 'error');
+                log('test1Output', '- Backend not deployed', 'error');
+                log('test1Output', '- Wrong API URL', 'error');
+                log('test1Output', '- CORS not configured', 'error');
+            }
+        }
+        
+        async function testChatHistory() {
+            clearLog('test2Output');
+            log('test2Output', '🔍 Testing chat history endpoint...', 'info');
             
-            if (!message) return;
-            
-            // Add user message to UI
-            addMessageToUI('user', message);
-            input.value = '';
-            
-            // Disable send button
-            const sendButton = document.getElementById('sendButton');
-            sendButton.disabled = true;
-            sendButton.innerHTML = 'Sending<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
+            if (API_BASE_URL === 'REPLACE_WITH_YOUR_API_URL') {
+                log('test2Output', '❌ Please enter your API URL first!', 'error');
+                return;
+            }
             
             try {
+                log('test2Output', `📡 Connecting to: ${API_BASE_URL}/chat`, 'info');
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                log('test2Output', `📊 Status: ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('test2Output', `📦 Messages count: ${data.messages?.length || 0}`, 'success');
+                    log('test2Output', `📦 Full response: ${JSON.stringify(data, null, 2)}`, 'success');
+                    log('test2Output', '✅ SUCCESS! Chat history endpoint works!', 'success');
+                } else {
+                    const text = await response.text();
+                    log('test2Output', `❌ Error: ${text}`, 'error');
+                }
+            } catch (error) {
+                log('test2Output', `❌ Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSendMessage() {
+            clearLog('test3Output');
+            const message = document.getElementById('testMessage').value;
+            log('test3Output', `🔍 Testing send message with: "${message}"`, 'info');
+            
+            if (API_BASE_URL === 'REPLACE_WITH_YOUR_API_URL') {
+                log('test3Output', '❌ Please enter your API URL first!', 'error');
+                return;
+            }
+            
+            try {
+                log('test3Output', `📡 Sending POST to: ${API_BASE_URL}/chat`, 'info');
+                log('test3Output', `📤 Message: ${message}`, 'info');
+                
                 const response = await fetch(`${API_BASE_URL}/chat`, {
                     method: 'POST',
                     headers: {
@@ -765,15 +226,18 @@
                     body: JSON.stringify({ prompt: message })
                 });
                 
+                log('test3Output', `📊 Status: ${response.status}`, 'info');
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
                 
-                // Read the stream
+                log('test3Output', '📡 Reading streaming response...', 'info');
+                
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                let assistantMessage = '';
-                let messageElement = null;
+                let fullResponse = '';
+                let chunkCount = 0;
                 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -784,18 +248,15 @@
                     
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
+                            chunkCount++;
                             try {
                                 const data = JSON.parse(line.slice(6));
                                 
                                 if (data.type === 'content_block_delta' && data.delta?.text) {
-                                    assistantMessage += data.delta.text;
-                                    
-                                    if (!messageElement) {
-                                        messageElement = addMessageToUI('assistant', '', true);
-                                    }
-                                    
-                                    updateMessageContent(messageElement, assistantMessage);
-                                    scrollToBottom();
+                                    fullResponse += data.delta.text;
+                                    log('test3Output', `📨 Chunk ${chunkCount}: ${data.delta.text}`, 'success');
+                                } else if (data.type) {
+                                    log('test3Output', `📨 Event: ${data.type}`, 'info');
                                 }
                             } catch (e) {
                                 // Skip invalid JSON
@@ -804,58 +265,92 @@
                     }
                 }
                 
-                showStatus('Message sent successfully!', 'success');
+                log('test3Output', '\n🎉 FULL RESPONSE:', 'success');
+                log('test3Output', fullResponse, 'success');
+                log('test3Output', `\n✅ SUCCESS! Received ${chunkCount} chunks`, 'success');
+                
+                // Check if tool was called
+                if (fullResponse.toLowerCase().includes('paris') || fullResponse.includes('°C') || fullResponse.includes('weather')) {
+                    log('test3Output', '🔧 ✅ Tool appears to have been called! Weather data present.', 'success');
+                } else {
+                    log('test3Output', '⚠️ Tool might not have been called - no weather data detected', 'error');
+                }
                 
             } catch (error) {
-                console.error('Error:', error);
-                addMessageToUI('assistant', `❌ Error: ${error.message}\n\nPlease check:\n1. Your API URL is correct in the HTML file\n2. The API server is running\n3. CORS is configured properly\n4. You have the correct AWS permissions`);
-                showStatus(`Error: ${error.message}`, 'error');
-            } finally {
-                // Re-enable send button
-                sendButton.disabled = false;
-                sendButton.innerHTML = 'Send 📤';
+                log('test3Output', `❌ Failed: ${error.message}`, 'error');
             }
         }
         
-        // Add message to UI
-        function addMessageToUI(role, content, isStreaming = false) {
-            const container = document.getElementById('messagesContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
+        async function testToolCall() {
+            clearLog('test4Output');
+            log('test4Output', '🔍 Testing tool call with multiple weather queries...', 'info');
             
-            const bubbleDiv = document.createElement('div');
-            bubbleDiv.className = 'message-bubble';
-            bubbleDiv.textContent = content;
+            const testQueries = [
+                "What is the weather in Paris?",
+                "Tell me the weather in Lyon",
+                "Compare weather in Paris and Marseille"
+            ];
             
-            messageDiv.appendChild(bubbleDiv);
-            container.appendChild(messageDiv);
+            for (const query of testQueries) {
+                log('test4Output', `\n--- Testing: "${query}" ---`, 'info');
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ prompt: query })
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let fullResponse = '';
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    if (data.type === 'content_block_delta' && data.delta?.text) {
+                                        fullResponse += data.delta.text;
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                    }
+                    
+                    // Check for weather data indicators
+                    const hasTemp = fullResponse.includes('°C') || fullResponse.includes('°F');
+                    const hasHumidity = fullResponse.toLowerCase().includes('humidity');
+                    const hasWeatherDesc = fullResponse.toLowerCase().includes('weather');
+                    
+                    if (hasTemp || hasHumidity) {
+                        log('test4Output', `✅ Tool called! Found weather data in response`, 'success');
+                        log('test4Output', `   Temperature: ${hasTemp ? '✓' : '✗'}`, hasTemp ? 'success' : 'error');
+                        log('test4Output', `   Humidity: ${hasHumidity ? '✓' : '✗'}`, hasHumidity ? 'success' : 'error');
+                    } else {
+                        log('test4Output', `⚠️ Tool might not have been called`, 'error');
+                    }
+                    
+                    log('test4Output', `Response preview: ${fullResponse.substring(0, 200)}...`, 'info');
+                    
+                } catch (error) {
+                    log('test4Output', `❌ Error: ${error.message}`, 'error');
+                }
+                
+                // Wait a bit between requests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
             
-            scrollToBottom();
-            
-            return isStreaming ? bubbleDiv : null;
-        }
-        
-        // Update message content (for streaming)
-        function updateMessageContent(element, content) {
-            element.textContent = content;
-        }
-        
-        // Scroll to bottom
-        function scrollToBottom() {
-            const container = document.getElementById('messagesContainer');
-            container.scrollTop = container.scrollHeight;
-        }
-        
-        // Show status
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusIndicator');
-            statusDiv.className = `status-indicator ${type}`;
-            statusDiv.textContent = message;
-            statusDiv.style.display = 'flex';
-            
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 5000);
+            log('test4Output', '\n✅ Tool call test complete!', 'success');
         }
     </script>
 </body>
