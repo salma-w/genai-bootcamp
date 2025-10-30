@@ -9,7 +9,7 @@ import logging
 import os
 import uuid
 import uvicorn
-
+import requests
 model_id = os.environ.get("MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
 state_bucket = os.environ.get("STATE_BUCKET", "")
 state_prefix = os.environ.get("STATE_PREFIX", "sessions/")
@@ -30,6 +30,30 @@ if state_prefix and not state_prefix.endswith("/"):
 
 boto_session = boto3.Session()
 
+ 
+@tool
+def weather_per_city(city: str) -> str:
+    """Get weather forecast for a city.
+        Args:
+        city: The name of the city
+    """
+    try:
+        url=f"https://wttr.in/{city}?format=j1"
+        response=requests.api.get(url=url)
+        response.raise_for_status()
+        weather_data=response.json()
+        current_condition=weather_data['current_condition'][0]
+        # Build a readable forecast string
+        result = f"Weather in {city}:\n"
+        result += f"Current: {current_condition['temp_C']}°C, {current_condition['weatherDesc'][0]['value']}\n"
+        result += f"Humidity: {current_condition['humidity']}%\n\n"
+            
+             
+        return result
+    except Exception as e:
+        return f"Error getting weather for {city}: {str(e)}"
+
+    return f"Weather forecast for {city}"
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -43,9 +67,9 @@ def create_agent(session_id: str) -> Agent:
     }
     if state_prefix:
         session_manager_kwargs["prefix"] = state_prefix
-
+    
     session_manager = S3SessionManager(**session_manager_kwargs)
-    agent = Agent(model=model_id, session_manager=session_manager)
+    agent = Agent(model=model_id, session_manager=session_manager, tools=[weather_per_city])
     logger.info("Agent initialized for session %s", session_id)
     return agent
 
@@ -110,4 +134,4 @@ async def generate(agent: Agent, session_id: str, prompt: str, request: Request)
         yield f"event: error\ndata: {error_message}\n\n"
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", "8080"))) 
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", "8080")))
