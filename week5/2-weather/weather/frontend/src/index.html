@@ -110,6 +110,7 @@
             75% { transform: rotate(10deg); }
         }
         
+
         /* Main content grid */
         .content-grid {
             display: grid;
@@ -648,8 +649,14 @@
     </div>
     
     <script>
-        // Configuration
-        const API_BASE_URL = 'http://localhost:8080'; // Change this to your API URL
+        // ============================================
+        // CONFIGURATION - CHANGE THIS TO YOUR API URL
+        // ============================================
+        const API_BASE_URL = 'REPLACE_WITH_YOUR_API_URL';
+        // Example: 'https://abc123.execute-api.us-east-1.amazonaws.com/prod'
+        // No trailing slash!
+        // ============================================
+        
         let conversationHistory = [];
         
         // Initialize particles
@@ -670,7 +677,14 @@
         // Initialize on load
         window.onload = function() {
             createParticles();
-            loadChatHistory();
+            
+            // Check if API URL is configured
+            if (API_BASE_URL === 'REPLACE_WITH_YOUR_API_URL') {
+                showStatus('⚠️ Please update the API_BASE_URL in the HTML file', 'error');
+                addMessageToUI('assistant', '⚠️ Configuration needed: Please update the API_BASE_URL constant in the HTML file with your actual API endpoint.');
+            } else {
+                loadChatHistory();
+            }
         };
         
         // Load chat history
@@ -722,6 +736,11 @@
         
         // Send message
         async function sendMessage() {
+            if (API_BASE_URL === 'REPLACE_WITH_YOUR_API_URL') {
+                showStatus('❌ Please configure your API URL in the HTML file first', 'error');
+                return;
+            }
+            
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
@@ -747,7 +766,7 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 // Read the stream
@@ -789,8 +808,8 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                addMessageToUI('assistant', '❌ Sorry, there was an error connecting to the server. Please make sure the API is running.');
-                showStatus('Error sending message. Please check your connection.', 'error');
+                addMessageToUI('assistant', `❌ Error: ${error.message}\n\nPlease check:\n1. Your API URL is correct in the HTML file\n2. The API server is running\n3. CORS is configured properly\n4. You have the correct AWS permissions`);
+                showStatus(`Error: ${error.message}`, 'error');
             } finally {
                 // Re-enable send button
                 sendButton.disabled = false;
