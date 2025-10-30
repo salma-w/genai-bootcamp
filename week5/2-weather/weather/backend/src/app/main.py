@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from strands import Agent
+from strands import Agent, tool
 from strands.session.s3_session_manager import S3SessionManager
 import boto3
 import json
