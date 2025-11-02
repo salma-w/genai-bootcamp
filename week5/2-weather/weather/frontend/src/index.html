@@ -1,76 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Backend Test - Weather API</title>
-    <style>
-        body {
-            font-family: monospace;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #1e1e1e;
-            color: #00ff00;
-        }
-        
-        h1 {
-            color: #00ff00;
-            border-bottom: 2px solid #00ff00;
-            padding-bottom: 10px;
-        }
-        
-        .test-section {
-            background: #2d2d2d;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 5px;
-            border: 1px solid #00ff00;
-        }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            background: #1e1e1e;
-            color: #00ff00;
-            border: 1px solid #00ff00;
-            font-family: monospace;
-            margin: 10px 0;
-        }
-        
-        button {
-            background: #00ff00;
-            color: #1e1e1e;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-family: monospace;
-            font-weight: bold;
-            margin: 5px;
-        }
-        
-        button:hover {
-            background: #00cc00;
-        }
-        
-        .output {
-            background: #1e1e1e;
-            padding: 15px;
-            margin-top: 15px;
-            border: 1px solid #00ff00;
-            white-space: pre-wrap;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .success { color: #00ff00; }
-        .error { color: #ff0000; }
-        .info { color: #00ffff; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Weather Assistant • SSE Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f172a;--panel:#0b1220;--muted:#94a3b8;--text:#e2e8f0;
+      --accent1:#7c3aed;--accent2:#4f46e5;--chip:#1e293b;
+      --user:#1e40af;--bot:#111827;--border:rgba(148,163,184,.14)
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 600px at -10% -10%, rgba(124,58,237,.25), transparent 60%),
+        radial-gradient(900px 500px at 120% 10%, rgba(79,70,229,.20), transparent 60%),
+        radial-gradient(900px 600px at 50% 120%, rgba(2,132,199,.18), transparent 60%),
+        var(--bg);
+      display:grid; place-items:center; padding:18px;
+    }
+    .shell{
+      width:min(980px,100%); height:min(92vh,960px);
+      display:grid; grid-template-rows:auto 1fr auto; gap:0;
+      background:rgba(11,18,32,.75); border:1px solid var(--border);
+      border-radius:18px; overflow:hidden; backdrop-filter:blur(10px);
+      box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .header{
+      padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+      background:linear-gradient(180deg, rgba(124,58,237,.14), rgba(124,58,237,0) 60%), rgba(7,11,22,.65);
+      border-bottom:1px solid var(--border)
+    }
+    .brand{display:flex; gap:12px; align-items:center}
+    .logo{
+      width:36px; height:36px; border-radius:50%; display:grid; place-items:center;
+      background:linear-gradient(135deg,var(--accent1),var(--accent2));
+      box-shadow:0 10px 24px rgba(124,58,237,.35); font-size:18px
+    }
+    .title{font-weight:700; letter-spacing:.2px}
+    .subtitle{color:var(--muted); font-size:12px; margin-top:2px}
+    .right{display:flex; align-items:center; gap:8px; position:relative}
+    .status{display:inline-flex; gap:8px; align-items:center; font-size:12px; background:rgba(148,163,184,.12);
+      padding:6px 10px; border-radius:999px}
+    .dot{width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+    .clearBtn{
+      border:1px solid var(--border); background:rgba(148,163,184,.12); color:var(--text);
+      padding:6px 10px; border-radius:999px; font-size:12px; cursor:pointer
+    }
+    .menu{
+      position:absolute; top:44px; right:0; background:#0b1220; border:1px solid var(--border);
+      border-radius:12px; overflow:hidden; min-width:220px; display:none; z-index:10;
+      box-shadow:0 14px 32px rgba(0,0,0,.45)
+    }
+    .menu button{
+      display:block; width:100%; text-align:left; padding:10px 12px; border:0; background:transparent; color:var(--text);
+      cursor:pointer; font-size:14px
+    }
+    .menu button:hover{background:rgba(148,163,184,.10)}
+    .main{display:grid; grid-template-rows:auto 1fr; gap:12px; padding:12px 12px 0}
+    .chips{display:flex; flex-wrap:wrap; gap:8px}
+    .chip{
+      background:var(--chip); color:#cbd5e1; border:1px solid var(--border);
+      padding:8px 12px; border-radius:999px; font-size:13px; cursor:pointer;
+      transition:transform .15s ease, border-color .15s ease;
+    }
+    .chip:hover{transform:translateY(-1px); border-color:rgba(148,163,184,.28)}
+    .messages{
+      overflow:auto; padding:8px 10px 14px; border-radius:12px;
+      background:rgba(2,6,23,.35); border:1px solid var(--border)
+    }
+    .row{display:grid; grid-template-columns:40px 1fr; gap:10px; margin:10px 6px; animation:rise .22s ease-out both}
+    @keyframes rise{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
+    .avatar{width:40px; height:40px; border-radius:50%; display:grid; place-items:center; font-size:16px;
+      background:linear-gradient(135deg,#0ea5e9,#22d3ee)}
+    .avatar.bot{background:linear-gradient(135deg,#f59e0b,#f97316)}
+    .card{
+      padding:12px 14px; border-radius:14px; background:var(--bot);
+      border:1px solid var(--border); color:#e5e7eb; white-space:pre-wrap; word-wrap:break-word
+    }
+    .row.user .card{background:var(--user)}
+    .footer{display:grid; grid-template-columns:1fr auto; gap:10px; padding:12px; border-top:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(2,6,23,.65), rgba(2,6,23,.9))}
+    textarea{
+      min-height:56px; max-height:160px; resize:vertical; width:100%;
+      border:1px solid rgba(148,163,184,.18); border-radius:14px; padding:12px 14px;
+      background:rgba(15,23,42,.55); color:var(--text); outline:none; box-shadow:inset 0 1px 0 rgba(255,255,255,.04)
+    }
+    textarea:focus{border-color:rgba(124,58,237,.6)}
+    .send{
+      height:56px; padding:0 18px; border:0; border-radius:12px; cursor:pointer; color:#fff; font-weight:600;
+      background:linear-gradient(135deg,var(--accent1),var(--accent2)); box-shadow:0 10px 24px rgba(124,58,237,.35);
+      transition:transform .15s ease, filter .15s ease
+    }
+    .send:disabled{filter:grayscale(.35) brightness(.85); box-shadow:none; cursor:not-allowed}
+    .send:hover:not(:disabled){transform:translateY(-1px)}
+    .hint{color:var(--muted); font-size:12px; margin-left:8px}
+  </style>
 </head>
 <body>
-    <h1>🧪 Backend  Test Suite</h1>
-    
-   
+  <div class="shell">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">🌤️</div>
+        <div>
+          <div class="title">Weather Assistant</div>
+          <div class="subtitle">Forecasts • 3-day outlook • Temp conversions</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="status"><span class="dot" id="dot"></span><span id="stat">Checking…</span></div>
+        <button class="clearBtn" id="clearBtn">🧹 Clear</button>
+        <div class="menu" id="clearMenu">
+          <button id="softClear">Clear messages (UI only)</button>
+          <button id="hardClear">Clear & start new session</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="chips">
+        <div class="chip" data-text="Weather in Paris">🗼 Paris weather</div>
+        <div class="chip" data-text="3-day forecast for Tokyo">📅 Tokyo 3-day</div>
+        <div class="chip" data-text="Convert 25°C to Fahrenheit">🌡️ Convert 25°C</div>
+        <div class="chip" data-text="Weather in New York">🗽 New York weather</div>
+      </div>
+
+      <div class="messages" id="msgs"></div>
+    </div>
+
+    <form class="footer" id="form">
+      <textarea id="prompt" placeholder="Ask about weather, a 3-day forecast, or convert °C/°F…"></textarea>
+      <div>
+        <button class="send" id="send" type="submit">Send ✈️</button>
+        <span class="hint">Shift+Enter for newline</span>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const msgs = document.getElementById('msgs');
+    const form = document.getElementById('form');
+    const promptEl = document.getElementById('prompt');
+    const sendBtn = document.getElementById('send');
+    const dot = document.getElementById('dot');
+    const stat = document.getElementById('stat');
+
+    // Clear menu elements
+    const clearBtn = document.getElementById('clearBtn');
+    const clearMenu = document.getElementById('clearMenu');
+    const softClearBtn = document.getElementById('softClear');
+    const hardClearBtn = document.getElementById('hardClear');
+
+    function addRow(role, text){
+      const row = document.createElement('div'); row.className = `row ${role}`;
+      const avatar = document.createElement('div'); avatar.className = `avatar ${role==='assistant'?'bot':''}`; avatar.textContent = role==='user'?'👤':'🤖';
+      const card = document.createElement('div'); card.className = 'card'; card.textContent = text;
+      row.appendChild(avatar); row.appendChild(card); msgs.appendChild(row); msgs.scrollTop = msgs.scrollHeight; return card;
+    }
+
+    function extractText(payload){
+      if (!payload) return '';
+      if (payload.type === 'content_block_delta' && payload.delta && typeof payload.delta.text === 'string') {
+        return payload.delta.text;
+      }
+      if (typeof payload.text === 'string') return payload.text;
+      if (typeof payload.content === 'string') return payload.content;
+      if (Array.isArray(payload.content)){
+        const pieces=[]; for (const c of payload.content){ if (c && typeof c.text === 'string') pieces.push(c.text); }
+        return pieces.join('');
+      }
+      return '';
+    }
+
+    // Chips
+    document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+      promptEl.value = c.dataset.text || c.textContent.trim();
+      promptEl.focus();
+    }));
+
+    // Init + history
+    (async function init(){
+      try{
+        const res = await fetch('/'); if (res.ok){ dot.style.background='#22c55e'; stat.textContent='Online'; }
+        const h = await fetch('/chat', { credentials:'include' });
+        if (h.ok){
+          const data = await h.json();
+          (data.messages||[]).forEach(m => {
+            const t = (m.content||[]).map(x=>x.text).join('\n');
+            addRow(m.role==='user'?'user':'assistant', t||'');
+          });
+        } else {
+          addRow('assistant','⚠️ Unable to load history.');
+          dot.style.background='#ef4444'; stat.textContent='Offline';
+        }
+      }catch{
+        addRow('assistant','⚠️ Unable to reach the API.');
+        dot.style.background='#ef4444'; stat.textContent='Offline';
+      }
+    })();
+
+    // Submit & stream
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const prompt = promptEl.value.trim(); if (!prompt) return;
+      addRow('user', prompt); const out = addRow('assistant','…');
+      promptEl.value=''; sendBtn.disabled=true;
+
+      try{
+        const res = await fetch('/chat', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          credentials:'include', body: JSON.stringify({ prompt })
+        });
+        if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
+        const reader = res.body.getReader(); const decoder = new TextDecoder();
+        let buffer = '', full = '';
+        while(true){
+          const {done, value} = await reader.read(); if (done) break;
+          buffer += decoder.decode(value, {stream:true});
+          const frames = buffer.split('\n\n'); buffer = frames.pop();
+          for (const f of frames){
+            const line = f.trim(); if (!line.startsWith('data:')) continue;
+            const jsonStr = line.slice(5).trim(); if (!jsonStr || jsonStr === '[DONE]') continue;
+            let payload; try{ payload = JSON.parse(jsonStr); }catch{ continue; }
+            const piece = extractText(payload);
+            if (piece){ full += piece; out.textContent = full; msgs.scrollTop = msgs.scrollHeight; }
+          }
+        }
+        if (!full) out.textContent = '⚠️ No content received.';
+      }catch(err){
+        out.textContent = `Error: ${err.message}`;
+      }finally{
+        sendBtn.disabled=false; promptEl.focus();
+      }
+    });
+
+    // Enter submits, Shift+Enter newline
+    promptEl.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
+    });
+
+    // ====== CLEAR CHAT FEATURE ======
+    // Toggle menu
+    clearBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      clearMenu.style.display = clearMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    // Close menu when clicking outside
+    document.addEventListener('click', (e)=>{
+      if (!clearMenu.contains(e.target) && e.target !== clearBtn){
+        clearMenu.style.display = 'none';
+      }
+    });
+
+    // Soft clear: wipe UI only
+    softClearBtn.addEventListener('click', ()=>{
+      clearMenu.style.display = 'none';
+      msgs.innerHTML = '';
+      addRow('assistant','🧹 Chat cleared (UI only).');
+    });
+
+    // Hard clear: delete session_id cookie and reload (new server session)
+    hardClearBtn.addEventListener('click', ()=>{
+      clearMenu.style.display = 'none';
+      // Expire cookie (path=/ to match server cookie path)
+      document.cookie = "session_id=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+      // Optional: add a quick note before reload
+      addRow('assistant','🔄 Starting a fresh session…');
+      setTimeout(()=> location.reload(), 250);
+    });
+  </script>
 </body>
 </html>
