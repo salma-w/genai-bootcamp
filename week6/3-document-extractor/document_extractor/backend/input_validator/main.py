@@ -4,7 +4,7 @@ import os
 from strands import Agent
 import uuid
 
-model_id = os.environ.get("MODEL_ID", "")
+model_id = os.environ.get("MODEL_ID", "global.anthropic.claude-sonnet-4-5-20250929-v1:0")
 s3_client = boto3.client('s3')
 
 agent = Agent(model=model_id, callback_handler=None)
