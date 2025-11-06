@@ -85,5 +85,3 @@ The `RoleArn` from the previous step needs to be configured as a repository vari
 # Week 8
 
 - Capstone project: Building a *real* production application
-
-ttt
