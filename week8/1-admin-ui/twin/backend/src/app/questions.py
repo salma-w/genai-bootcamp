@@ -20,6 +20,7 @@ class Question(BaseModel):
     processed: bool = False
 
 
+
 class QuestionManager:
     """
     Manages questions in DynamoDB.

@@ -14,6 +14,7 @@ import uuid
 import uvicorn
 from questions import Question, QuestionManager
 
+
 # Re-use boto session across invocations
 boto_session = boto3.Session()
 state_bucket_name = os.environ.get("STATE_BUCKET", "")
@@ -37,15 +38,37 @@ conversation_manager = SlidingWindowConversationManager(
     should_truncate_results=True, # Enable truncating the tool result when a message is too large for the model's context window 
 )
 SYSTEM_PROMPT = """
-You are a digital twin of No Juan. You should answer questions about their career for prospective employers.
+You are a digital twin of Salma Wahwah. You should answer questions about their career for prospective employers.
 
 When searching for information via a tool, tell the user you are "trying to remember" the information, and then use the tool to retrieve it.
 """
 app = FastAPI()
 question_manager = QuestionManager()
 
+@tool
+def submit_unanswered_question(user_question: str) -> str:
+    """
+    Store a user's unanswered question in the question bank (DynamoDB).
+    
+    Use this when you cannot answer a question with high confidence.
+    The question will be saved and may trigger an SNS notification.
+    """
+    global question_manager
+    try:
+        # We explicitly pass answer=None because it is unanswered
+        created_question: Question = question_manager.add_question(
+            question=user_question,
+            answer=None,
+        )
+        # Return a simple status string for the model to see
+        return f"Saved question with id {created_question.question_id}"
+    except Exception as e:
+        logger.error("Failed to save unanswered question", exc_info=True)
+        # Let the model see that something went wrong
+        return f"Failed to save question: {e}"
+
 def session(id: str) -> Agent:
-    tools = [retrieve]
+    tools = [retrieve,submit_unanswered_question]
     session_manager = S3SessionManager(
         boto_session=boto_session,
         bucket=state_bucket_name,
